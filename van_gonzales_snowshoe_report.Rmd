@@ -194,25 +194,27 @@ The actual difference in these means is `r round(mean_diff,1)` grams. The mean w
 ```{r}
 weight_foot <- bonanza_hares %>% 
   filter(age == "j")
+```
 
-hindft_plot <- ggplot(data = weight_foot, aes(x = hindft, y = weight)) +
+
+```{r}
+hindft_plot <- ggplot(data = weight_foot, 
+                      aes(y = weight, x = hindft)) +
   geom_point() +
   geom_smooth(method = "lm") +
-  theme_classic() +
-  labs(x = "Hindfoot Length (mm)", y = "Weight (g)", 
-       title = "Juvenile Hind Foot Length vs Weight") +
+  labs(y = "Weight (g)",
+       x = "Hind Foot Length (mm)") + 
     theme(axis.text.x = element_text(family = "Times New Roman", 
-                size = 9),
+                size = 7),
                 axis.text.y = element_text(family = "Times New Roman",
                                           size = 8),
-         plot.title = element_text(hjust = 0.5, 
-                                   family = "Times New Roman"),
+         plot.title = element_text(hjust = 0.5, family = "Times New Roman"),
          axis.title.x = element_text(family = "Times New Roman"),
-         axis.title.y = element_text(family = "Times New Roman")) 
-
-ggplotly(hindft_plot)
+         axis.title.y = element_text(family = "Times New Roman"))
+  
+  ggplotly(hindft_plot)
 ```
-**Figure 3.** Length of juvenile weight (g) against hind foot(mm) . Juvenile hare weight is displayed on the x-axis, while hind foot length is on the y-axis. Each hare observation is represented by a dot on the graph. Simple linear regression is plotted on the graph by the blue line. Data: (Kielland et al. 2017).
+**Figure 3.** Scatterplot showing length of juvenile weight (g) as a function of hind foot length (mm). The dots are representative of individual juvenile hare observations. The blue line plotted across the dots represents a simple linear regression. Data: (Kielland et al. 2017).
 
 
 ```{r}
