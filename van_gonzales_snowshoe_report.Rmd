@@ -20,6 +20,7 @@ library(extrafont)
 library(effsize)
 library(equatiomatic)
 library(plotly)
+library(effsize)
 ```
 
 ## Introduction
@@ -118,30 +119,30 @@ ggplotly(weight_sex_site_plot)
 As **Figure 2** shows, the female juvenile hares have a lower average weight compared to males at every location. At the Bonanza Lowland location, the females average weight is `r weight_sex_site$mean_weight[1]` $\pm$  `r weight_sex_site$sd_weight[1]` grams compared to the male average weight of  `r weight_sex_site$mean_weight[4]` $\pm$  `r weight_sex_site$sd_weight[4]` grams. The NA bar column does not show up in this site because there isn't enough data to calculate a mean weight. At the Bonanza Mature site,  the female average weight is `r weight_sex_site$mean_weight[2]` $\pm$  `r weight_sex_site$sd_weight[2]` grams compared to the male average weight of `r weight_sex_site$mean_weight[5]` $\pm$  `r `weight_sex_site$sd_weight[5]`grams and the unknown sex hare average weight of `r weight_sex_site$mean_weight[8]` $\pm$  `r weight_sex_site$sd_weight[8]` grams. Finally, at the Bonanza Riparian site, the female average weight is `r weight_sex_site$mean_weight[3]` $\pm$  `r weight_sex_site$sd_weight[3]` grams compared to the male average weight of `r weight_sex_site$mean_weight[6]` $\pm$  `r weight_sex_site$sd_weight[6]`grams and the unknown sex hare average weight of `r weight_sex_site$mean_weight[9]` $\pm$  `r weight_sex_site$sd_weight[9]` grams. 
 
 ```{r, include = FALSE}
-juveniles <- bonanza_hares %>% 
+juveniles_sex_weight <- bonanza_hares %>% 
   filter(age == "j") %>% 
   group_by(sex) %>% 
   summarize(weight)
 
-ggplot(data = juveniles, 
+ggplot(data = juveniles_sex_weight, 
        aes(x = weight)) +
   geom_histogram() +
   facet_wrap(~sex)
 ```
 ```{r, include = FALSE}
-ggplot(data = juveniles, aes(sample = weight)) +
+ggplot(data = juveniles_sex_weight, aes(sample = weight)) +
   stat_qq() +
   geom_qq_line() +
   facet_wrap(~sex)
 ```
 
 ```{r}
-f_hares <- juveniles %>% 
+f_hares <- juveniles_sex_weight %>% 
   filter(sex == "f") %>% 
   drop_na(weight) %>% 
   pull(weight)
 
-m_hares <- juveniles %>% 
+m_hares <- juveniles_sex_weight %>% 
   filter(sex == "m") %>% 
   drop_na(weight) %>% 
   pull(weight)
@@ -150,14 +151,10 @@ m_hares <- juveniles %>%
 
 ```{r}
 hares_t <- t.test(f_hares, m_hares)
-
-hares_t
 ```
 
 ```{r}
 hare_cohen <- cohen.d(f_hares, m_hares)
-
-hare_cohen
 ```
 
 
@@ -192,18 +189,19 @@ The actual difference in these means is `r round(mean_diff,1)` grams. The mean w
 
 #### D. Relationship Between Juvenile Weight & Hind Foot Length
 ```{r}
-weight_foot <- bonanza_hares %>% 
+juveniles <- bonanza_hares %>% 
   filter(age == "j")
 ```
 
 
 ```{r}
-hindft_plot <- ggplot(data = weight_foot, 
+hindft_plot <- ggplot(data = juveniles, 
                       aes(y = weight, x = hindft)) +
   geom_point() +
   geom_smooth(method = "lm") +
   labs(y = "Weight (g)",
-       x = "Hind Foot Length (mm)") + 
+       x = "Hind Foot Length (mm)",
+       title = "Juvenile Hares Hind Foot vs Weight") + 
     theme(axis.text.x = element_text(family = "Times New Roman", 
                 size = 7),
                 axis.text.y = element_text(family = "Times New Roman",
@@ -218,13 +216,27 @@ hindft_plot <- ggplot(data = weight_foot,
 
 
 ```{r}
-hares_lm <- lm(weight ~hindft, data = weight_foot)
+hare_pearson <- cor.test(juveniles$weight, juveniles$hindft)
+
+hare_pearson_tidy <- tidy(hare_pearson)
+
+hares_lm <- lm(weight ~hindft, data = juveniles)
+
+hares_lm_glance <- glance(hares_lm)
+
+hares_lm_tidy <- tidy(hares_lm)
+
+plot(hares_lm)
+
+extract_eq(model = hares_lm, use_coefs = TRUE)
 ```
 
+The relationship between juvenile hare weight and hind foot length appears relatively linear (Figure 3). Linear regression revealed that weight predicts hind foot length (p < 0.001, R^2^ = `r round(hare_lm_glance$r.squared,2)`) with an average slope of $\beta$ = `r round(hare_lm_tidy$estimate[2], 2)` g mm^-1^. Weight and hind foot length are moderately, and significantly, positively correlated (Pearson's *r* = `r round(hare_cor_tidy$estimate,2)`, p < 0.001). One issue with linear regression in this instance is that homoscedasticity is not satisfied. I do not think this linear regression will represent the relationship between hind foot length and weight in the best way, given that the variance in residuals does not seem homogeneous throughout the spread of samples.
 
 
+The linear model that displays the relationship between the weight of a hare and its hind foot length is shown below:
 
-
+A slope ($\beta_1$) of `r lm_glance$slope` with units of $\frac{mm}{g}$ shows that for each unit increase in weight, the hind foot length of the hare will increase by `r lm_glance$slope` mm. An intercept ($\beta_0$) of `r lm_glance$intercept` shows that, though impossible, a hare with a mass of 0 would have a hind foot length of `r lm_glance$intercept` mm. The outcome of the linear regression displayed a weak linear relationship between the weight of a hare and its' hind foot length. Only `r lm_glance$adj.r.squared * 100`% of the variation in the scatter plot could be explained by the model according to **Table 4**. The Pearson Correlation of `r lm_glance$pearson` shows that there is a moderate positive correlation between weight and hind foot length. Assumptions of homoscedasticity is of concern in this model as the residuals are not relatively constant in the model. Additionally, the assumption that the distribution of errors is normally distributed is of concern here. Furthermore, based off of the scatter plot, the data does not seem to follow a linear relationship. 
 
 
 
