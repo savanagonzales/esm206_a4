@@ -10,7 +10,7 @@ html_document:
 ---
 ```{r setup, include=FALSE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.align = 'center', out.extra = 'angle = 90')
-library(tidyverse)
+library(tidyverse) # Loading all packages
 library(here)
 library(janitor)
 library(kableExtra)
@@ -30,7 +30,7 @@ This report provides an exploratory analysis of juvenile snowshoe hares in the B
 Dr. Knut Kielland (Kielland et. al. 2017.) was the principal investigator for this project. This dataset includes information on the trappings of both adult and juvenile hares at all 3 sites including date, trap number, and ear tag identifier. In addition, the dataset contains information on each hare trapped, including sex, weight, hind foot length, and age. In this report, a two-sample unpaired t-test with an $\alpha$ = 0.05 was used to compare the average weights between male and female juvenile hares. Differences between groups are described by Cohen's *d* effect size. A simple linear regression was used to model the relationship between hare weight and hind foot length. All analyses are on R Version 4.1.1 using RStudio Version 1.4.1717.
 <br>
 ```{r}
-bonanza_hares <- read_csv(here("data", "bonanza_hares.csv"))
+bonanza_hares <- read_csv(here("data", "bonanza_hares.csv")) #Reading in the Data
 ```
 ## Juvenile Hare Investigation
 <br>
@@ -39,11 +39,11 @@ bonanza_hares <- read_csv(here("data", "bonanza_hares.csv"))
 <br>
 ```{r}
 trap_counts <- bonanza_hares %>% 
-  filter(age == "j") %>% 
-  mutate(date = mdy(date)) %>%
+  filter(age == "j") %>%  #Filtering for just juveniles
+  mutate(date = mdy(date)) %>% # Changing the date
   mutate(year = year(date)) %>% 
   group_by(year) %>% 
-  summarize(trap = n())
+  summarize(trap = n()) #Summarizing the trap count
 ```
 
 
@@ -53,11 +53,11 @@ trap_plot <- ggplot(data = trap_counts, aes(x = year, y = trap)) +
   scale_x_continuous(breaks = seq(from = 1999, to = 2012, by = 1)) +
   labs(x = "Year", y = "# of Trappings", 
        title = "Trapping Count of Juvenile Hares by Year") +
-   theme(axis.text.x = element_text(family = "Times New Roman", 
+   theme(axis.text.x = element_text(family = "Times New Roman", #family changes font
                 size = 7),
                 axis.text.y = element_text(family = "Times New Roman",
                                           size = 8),
-         plot.title = element_text(hjust = 0.5, family = "Times New Roman"),
+         plot.title = element_text(hjust = 0.5, family = "Times New Roman"), #hjust centers the title
          axis.title.x = element_text(family = "Times New Roman"),
          axis.title.y = element_text(family = "Times New Roman"))
 
@@ -67,7 +67,7 @@ ggplotly(trap_plot)
 
 ```{r}
 trap_summary <- trap_counts %>% 
-  summarize(mean_trap = mean(trap),
+  summarize(mean_trap = mean(trap), # creating columns for median, mean, max, and min
             median_trap = median(trap),
             max_trap = max(trap),
             min_trap = min(trap))
@@ -87,7 +87,7 @@ weight_sex_site <- bonanza_hares %>%
             median_weight = round(median(weight, na.rm = TRUE), 2),
             sd_weight = round(sd(weight, na.rm = TRUE), 2)) %>% 
   mutate(grid = case_when(
-    grid == "bonrip" ~ "Bonanza Riparian",
+    grid == "bonrip" ~ "Bonanza Riparian", # changing the facet names
     grid == "bonbs" ~ "Bonanza Lowland",
     grid == "bonmat" ~ "Bonanza Mature"))
 ```
@@ -95,13 +95,13 @@ weight_sex_site <- bonanza_hares %>%
 ```{r}
 weight_sex_site_plot<- ggplot(data = weight_sex_site, 
        aes(x = sex, y = mean_weight, fill = sex)) +
-  geom_bar(stat = "identity") +
-  facet_wrap(~grid) +
+  geom_bar(stat = "identity") + # stat identity when choosing x and y variables
+  facet_wrap(~grid) + # wrapping by site
   theme(strip.text.x = element_text(family = "Times New Roman"))+
-  scale_fill_manual(values = c("palevioletred1", "slateblue3")) +
+  scale_fill_manual(values = c("palevioletred1", "slateblue3")) + # manual selection of colors
   labs(x = "Sex", y = "Average Weight (g)",
        title = "Average Weight of Male and Female Hares by Site") +
-  theme(axis.text.x = element_text(family = "Times New Roman", 
+  theme(axis.text.x = element_text(family = "Times New Roman", # cahnging font
                 size = 9),
                 axis.text.y = element_text(family = "Times New Roman",
                                           size = 8),
@@ -110,9 +110,9 @@ weight_sex_site_plot<- ggplot(data = weight_sex_site,
          axis.title.y = element_text(family = "Times New Roman"),
         ) +
   geom_errorbar(aes(ymin = mean_weight - sd_weight, ymax = mean_weight + sd_weight),
-                width=.2, position=position_dodge(.9))
+                width=.2, position=position_dodge(.9)) # adding sd error bars
 
-ggplotly(weight_sex_site_plot)
+ggplotly(weight_sex_site_plot) #making the plot interactive
 ```
 **Figure 2.** Bar plot of male (purple), female (pink), and the unknown sex (gray) juvenile hare weights by site in Bonanza Creek from 1998-2012, from Kielland et al. (2017). The error bars are representative of the standard deviation of the sample weights. The unknown genders are represented by NA.
 <br>
@@ -121,11 +121,11 @@ ggplotly(weight_sex_site_plot)
 <br>
 As **Figure 2** shows, the female juvenile hares have a lower average weight compared to males at every location. At the Bonanza Lowland location, the females average weight is `r weight_sex_site$mean_weight[1]` $\pm$  `r weight_sex_site$sd_weight[1]` grams compared to the male average weight of  `r weight_sex_site$mean_weight[4]` $\pm$  `r weight_sex_site$sd_weight[4]` grams. The NA bar column does not show up in this site because there isn't enough data to calculate a mean weight. At the Bonanza Mature site,  the female average weight is `r weight_sex_site$mean_weight[2]` $\pm$  `r weight_sex_site$sd_weight[2]` grams compared to the male average weight of `r weight_sex_site$mean_weight[5]` $\pm$  `r `weight_sex_site$sd_weight[5]`grams and the unknown sex hare average weight of `r weight_sex_site$mean_weight[8]` $\pm$  `r weight_sex_site$sd_weight[8]` grams. Finally, at the Bonanza Riparian site, the female average weight is `r weight_sex_site$mean_weight[3]` $\pm$  `r weight_sex_site$sd_weight[3]` grams compared to the male average weight of `r weight_sex_site$mean_weight[6]` $\pm$  `r weight_sex_site$sd_weight[6]`grams and the unknown sex hare average weight of `r weight_sex_site$mean_weight[9]` $\pm$  `r weight_sex_site$sd_weight[9]` grams. 
 
-```{r, include = FALSE}
+```{r, include = FALSE} 
 juveniles_sex_weight <- bonanza_hares %>% 
   filter(age == "j") %>% 
   group_by(sex) %>% 
-  summarize(weight)
+  summarize(weight) #creating df with just weight and sex
 
 ggplot(data = juveniles_sex_weight, 
        aes(x = weight)) +
@@ -134,7 +134,7 @@ ggplot(data = juveniles_sex_weight,
 ```
 ```{r, include = FALSE}
 ggplot(data = juveniles_sex_weight, aes(sample = weight)) +
-  stat_qq() +
+  stat_qq() + #creating qq plot
   geom_qq_line() +
   facet_wrap(~sex)
 ```
@@ -142,22 +142,22 @@ ggplot(data = juveniles_sex_weight, aes(sample = weight)) +
 ```{r}
 f_hares <- juveniles_sex_weight %>% 
   filter(sex == "f") %>% 
-  drop_na(weight) %>% 
+  drop_na(weight) %>% #removing na from weight
   pull(weight)
 
 m_hares <- juveniles_sex_weight %>% 
   filter(sex == "m") %>% 
   drop_na(weight) %>% 
-  pull(weight)
+  pull(weight) # pulling just weight from juveniles_sex_weight df
 
 ```
 
 ```{r}
-hares_t <- t.test(f_hares, m_hares)
+hares_t <- t.test(f_hares, m_hares) #performing ttest
 ```
 
 ```{r}
-hare_cohen <- cohen.d(f_hares, m_hares)
+hare_cohen <- cohen.d(f_hares, m_hares) #performing cohen d test
 ```
 
 
@@ -168,20 +168,20 @@ weight_sex_count <- bonanza_hares %>%
   summarize(mean_weight = round(mean(weight, na.rm = TRUE), 1),
             sd_weight = round(sd(weight, na.rm = TRUE), 1),
             sample_size = n(),) %>% 
-  na.omit()
+  na.omit() #removing all nas
 
-mean_diff = weight_sex_count$mean_weight[2] - weight_sex_count$mean_weight[1]
+mean_diff = weight_sex_count$mean_weight[2] - weight_sex_count$mean_weight[1] #calc mean difference
 ```
 
 #### C. Juvenile Weight Comparison Between Male and Female Hares
 ```{r}
 weight_sex_count %>% 
-  kable(col.names = c("Sex",
+  kable(col.names = c("Sex", #creating column names
                       "Mean Weight (g)",
                       "Standard Deviation(g)",
                       "Sample Size (n)"),
-                      caption = "Table 1. Comparing juvenile hare average weights between males and females in Bonanza Creek from 1998-2012, from Kielland et al. (2017). The male mean weight is larger than the female mean weight of all juveniles across all sites.") %>% 
-  kable_classic_2(full_width = T, html_font = "Cambria")
+                      caption = "Table 1. Comparing juvenile hare average weights between males and females in Bonanza Creek from 1998-2012, from Kielland et al. (2017). The male mean weight is larger than the female mean weight of all juveniles across all sites.") %>% #including caption in table
+  kable_classic_2(full_width = T, html_font = "Cambria") #table styling
 ```
 <br>
 
@@ -193,7 +193,7 @@ The actual difference in these means is `r round(mean_diff,1)` grams. The mean w
 #### D. Relationship Between Juvenile Weight & Hind Foot Length
 ```{r}
 juveniles <- bonanza_hares %>% 
-  filter(age == "j")
+  filter(age == "j") #creating df with just J's should've done this at beginning
 ```
 
 
@@ -201,7 +201,7 @@ juveniles <- bonanza_hares %>%
 hindft_plot <- ggplot(data = juveniles, 
                       aes(y = weight, x = hindft)) +
   geom_point() +
-  geom_smooth(method = "lm") +
+  geom_smooth(method = "lm") + #adding linear regression line
   labs(y = "Weight (g)",
        x = "Hind Foot Length (mm)",
        title = "Juvenile Hares Hind Foot vs Weight") + 
@@ -213,27 +213,27 @@ hindft_plot <- ggplot(data = juveniles,
          axis.title.x = element_text(family = "Times New Roman"),
          axis.title.y = element_text(family = "Times New Roman"))
   
-  ggplotly(hindft_plot)
+  ggplotly(hindft_plot) # making plot interactive
 ```
 **Figure 3.** Linear regression model scatterplot showing length of juvenile weight (g) as a function of hind foot length (mm). The dots are representative of individual juvenile hare observations. The blue line plotted across the dots represents a simple linear regression. Data: (Kielland et al. 2017).
 
 
 ```{r, include = FALSE}
-hare_pearson <- cor.test(juveniles$weight, juveniles$hindft)
+hare_pearson <- cor.test(juveniles$weight, juveniles$hindft) #pearson r test
 
-hare_pearson_tidy <- tidy(hare_pearson)
+hare_pearson_tidy <- tidy(hare_pearson) #cleaning up the t4est
 
-hares_lm <- lm(weight ~hindft, data = juveniles)
+hares_lm <- lm(weight ~hindft, data = juveniles) #linear regression model
 
-hares_lm_glance <- glance(hares_lm)
+hares_lm_glance <- glance(hares_lm) #lm table; call it in console
 
-hares_lm_tidy <- tidy(hares_lm)
+hares_lm_tidy <- tidy(hares_lm) #cleaning up lm
 
-plot(hares_lm)
+plot(hares_lm) #plotting lm; can also do in console
 
-extract_eq(model = hares_lm, use_coefs = TRUE)
+extract_eq(model = hares_lm, use_coefs = TRUE) #looking at coefficients
 
-hares_lm_glance
+hares_lm_glance #calling lm table; can also do in console
 ```
 *Linear Regression of Hind Foot & Weight Analysis*
 <br>
