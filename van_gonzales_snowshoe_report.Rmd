@@ -34,7 +34,9 @@ bonanza_hares <- read_csv(here("data", "bonanza_hares.csv"))
 ```
 ## Juvenile Hare Investigation
 <br>
+
 #### A. Trap Counts Per Year
+<br>
 ```{r}
 trap_counts <- bonanza_hares %>% 
   filter(age == "j") %>% 
@@ -113,6 +115,7 @@ weight_sex_site_plot<- ggplot(data = weight_sex_site,
 ggplotly(weight_sex_site_plot)
 ```
 **Figure 2.** Bar plot of male (purple), female (pink), and the unknown sex (gray) juvenile hare weights by site in Bonanza Creek from 1998-2012, from Kielland et al. (2017). The error bars are representative of the standard deviation of the sample weights. The unknown genders are represented by NA.
+<br>
 
 *Weight by Sex & Site Analysis*
 <br>
@@ -168,8 +171,6 @@ weight_sex_count <- bonanza_hares %>%
   na.omit()
 
 mean_diff = weight_sex_count$mean_weight[2] - weight_sex_count$mean_weight[1]
-
-weight_sex_count
 ```
 
 #### C. Juvenile Weight Comparison Between Male and Female Hares
@@ -182,6 +183,8 @@ weight_sex_count %>%
                       caption = "Table 1. Comparing juvenile hare average weights between males and females in Bonanza Creek from 1998-2012, from Kielland et al. (2017). The male mean weight is larger than the female mean weight of all juveniles across all sites.") %>% 
   kable_classic_2(full_width = T, html_font = "Cambria")
 ```
+<br>
+
 *Weight by Sex Analysis (NAs Excluded)*
 <br>
 The actual difference in these means is `r round(mean_diff,1)` grams. The mean weight of female hares across all three sites is `r weight_sex_count$mean_weight[1]` $\pm$ `r weight_sex_count$sd_weight[1]` grams and the male hares average weight across all sites is `r weight_sex_count$mean_weight[2]` $\pm$ `r weight_sex_count$sd_weight[2]` grams. A standard unpaired two sample t-test was conducted to analyze if the calculated difference is statistically significant. The test resulted in a p-value of `r round(hares_t$p.value, 3)` (effect size, `r abs(round(hare_cohen$estimate,4))`), and means there is a `r round(hares_t$p.value * 100, 3)`% chance that these samples would have a difference in means at least as different as `r round(mean_diff, 1)` grams, assuming that the two samples are drawn from populations with the same mean. The null hypothesis is that the difference in the means between males and females is equal to 0, while the alternative hypothesis is that the difference in means is not equal to 0. Therefore with this p-value, the null hypothesis is rejected because it falls below the assigned significance level of ($\alpha$ = 0.05).
@@ -212,10 +215,10 @@ hindft_plot <- ggplot(data = juveniles,
   
   ggplotly(hindft_plot)
 ```
-**Figure 3.** Scatterplot showing length of juvenile weight (g) as a function of hind foot length (mm). The dots are representative of individual juvenile hare observations. The blue line plotted across the dots represents a simple linear regression. Data: (Kielland et al. 2017).
+**Figure 3.** Linear regression model scatterplot showing length of juvenile weight (g) as a function of hind foot length (mm). The dots are representative of individual juvenile hare observations. The blue line plotted across the dots represents a simple linear regression. Data: (Kielland et al. 2017).
 
 
-```{r}
+```{r, include = FALSE}
 hare_pearson <- cor.test(juveniles$weight, juveniles$hindft)
 
 hare_pearson_tidy <- tidy(hare_pearson)
@@ -229,14 +232,24 @@ hares_lm_tidy <- tidy(hares_lm)
 plot(hares_lm)
 
 extract_eq(model = hares_lm, use_coefs = TRUE)
+
+hares_lm_glance
 ```
+*Linear Regression of Hind Foot & Weight Analysis*
+<br>
+The relationship between juvenile hare weight and hind foot length is described by the linear regression model displayed by **Figure 3**. The linear regression model suggests that hind foot length affects weight (p < 0.001, R^2^ = `r round(hares_lm_glance$r.squared,2)`) with the average slope of $\beta$ = `r round(hares_lm_tidy$estimate[2], 2)` g/mm. According to the Pearson's *r* test, the correlation between hind foot and weight is significant and positive (Pearson's *r* = `r round(hare_pearson_tidy$estimate,2)`, p < 0.001). Although these p-values suggest significance, it is concerning that the assumption of homoscedasticity in the linear regression is not accomplished. Therefore, performing a linear regression is not an appropriate method of determining the relationship between hind foot length and weight.
 
-The relationship between juvenile hare weight and hind foot length appears relatively linear (Figure 3). Linear regression revealed that weight predicts hind foot length (p < 0.001, R^2^ = `r round(hare_lm_glance$r.squared,2)`) with an average slope of $\beta$ = `r round(hare_lm_tidy$estimate[2], 2)` g mm^-1^. Weight and hind foot length are moderately, and significantly, positively correlated (Pearson's *r* = `r round(hare_cor_tidy$estimate,2)`, p < 0.001). One issue with linear regression in this instance is that homoscedasticity is not satisfied. I do not think this linear regression will represent the relationship between hind foot length and weight in the best way, given that the variance in residuals does not seem homogeneous throughout the spread of samples.
+## Summary
+- The trappings over the duration of the of the study were inconsistent year to year. 
+- There was a large variation in the average weight of juvenile hares by sex and site, however overall male juvenile hares had larger weights compared to females and the unidentified sexes. The p-value for this comparison of male and female weight was found to be statistically significant.
+- There is not a linear relationship between hare hind foot length and its weight.
+- There is a statistically significant difference in means between male and female juvenile snowshoe hare weights and the effect size is small. 
+- The total juvenile hare trap counts by year steadily declined from the beginning of sampling (1999) to the end (2012).
 
 
-The linear model that displays the relationship between the weight of a hare and its hind foot length is shown below:
+## Citations
+Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
 
-A slope ($\beta_1$) of `r lm_glance$slope` with units of $\frac{mm}{g}$ shows that for each unit increase in weight, the hind foot length of the hare will increase by `r lm_glance$slope` mm. An intercept ($\beta_0$) of `r lm_glance$intercept` shows that, though impossible, a hare with a mass of 0 would have a hind foot length of `r lm_glance$intercept` mm. The outcome of the linear regression displayed a weak linear relationship between the weight of a hare and its' hind foot length. Only `r lm_glance$adj.r.squared * 100`% of the variation in the scatter plot could be explained by the model according to **Table 4**. The Pearson Correlation of `r lm_glance$pearson` shows that there is a moderate positive correlation between weight and hind foot length. Assumptions of homoscedasticity is of concern in this model as the residuals are not relatively constant in the model. Additionally, the assumption that the distribution of errors is normally distributed is of concern here. Furthermore, based off of the scatter plot, the data does not seem to follow a linear relationship. 
 
 
 
